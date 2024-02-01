@@ -1,6 +1,9 @@
 package com.example.gojipserver.global.security.config;
 
 import com.example.gojipserver.global.oauth2.service.CustomOAuth2UserService;
+import com.example.gojipserver.global.security.handler.OAuth2AuthenticationSuccessHandler;
+import com.example.gojipserver.global.security.jwt.JwtAuthenticationFilter;
+import com.example.gojipserver.global.security.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,12 +11,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2Service;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final JwtTokenProvider jwtTokenProvider;
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -35,9 +41,11 @@ public class SecurityConfig {
                 .authorizationEndpoint(authorization->authorization.baseUri("/oauth2/authorize")) // 인증 요청을 처리하는 Endpoint 설정
                 .redirectionEndpoint(redirection->redirection.baseUri("/oauth2/callback/*")) // OAuth2 인증 서버로부터 리다이렉트를 받을 Endpoint 설정
                 .userInfoEndpoint(userInfo->userInfo.userService(customOAuth2Service)) // 유저 생성후 적용 예정
-//                .successHandler(null)
-//                .failureHandler(null)
+                .successHandler(oAuth2AuthenticationSuccessHandler) //성공시
+//                .failureHandler(null) //실패시
         );
+
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
