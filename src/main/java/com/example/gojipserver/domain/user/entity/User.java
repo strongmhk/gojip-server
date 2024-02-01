@@ -22,5 +22,9 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+    private String refreshToken;
 
+    public void updateRefreshToken(String updateRefreshToken) {
+        this.refreshToken = updateRefreshToken;
+    }
 }
