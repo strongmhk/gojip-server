@@ -9,5 +9,5 @@ public class GojipServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(GojipServerApplication.class, args);
     }
-
+    
 }
